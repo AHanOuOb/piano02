@@ -64,10 +64,10 @@
       50% { transform: scale(1.18); }
     }
     @keyframes charCheerJump {
-      0% { transform: translateY(0) scale(1, 1); }
-      25% { transform: translateY(3px) scale(1.06, 0.94); }
-      55% { transform: translateY(-13px) scale(0.95, 1.06); }
-      80% { transform: translateY(1px) scale(1.03, 0.97); }
+      0%   { transform: translateY(0) scale(1, 1); }
+      22%  { transform: translateY(3px) scale(1.07, 0.93); }
+      52%  { transform: translateY(-15px) scale(0.95, 1.06); }
+      78%  { transform: translateY(1px) scale(1.03, 0.97); }
       100% { transform: translateY(0) scale(1, 1); }
     }
 
@@ -103,8 +103,17 @@
       transform-origin: 170px 62px;
       animation: heartPulse 1.8s ease-in-out infinite;
     }
+
+    #char-piano-jump {
+      transform-origin: 95px 140px;
+      will-change: transform;
+    }
+    #char-cinna-jump {
+      transform-origin: 246px 140px;
+      will-change: transform;
+    }
     .char-cheer {
-      animation: charCheerJump 0.58s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: charCheerJump 0.56s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     /* 蓋章彈跳與華麗粒子特效 */
@@ -222,7 +231,7 @@
     <div class="relative bg-white/95 rounded-[30px] shadow-[0_12px_32px_rgba(236,112,163,0.22)] border-[3px] border-pink-200/90 overflow-hidden">
       <!-- 頂部夢幻漸層天空與會動的彼安諾 & 大耳狗雙人插畫舞台 -->
       <div class="relative bg-gradient-to-b from-[#FFE3F0] via-[#FFF1F7] to-white pt-3 pb-1 px-3 border-b border-pink-100">
-        <!-- 頂部小標語與重播按鈕 -->
+        <!-- 頂部小標語 -->
         <div class="flex items-center justify-between px-1 mb-1">
           <span class="inline-flex items-center gap-1 text-[10px] font-extrabold text-pink-500 bg-white/85 px-2.5 py-0.5 rounded-full border border-pink-200/80 shadow-2xs">
             🎀 MY SWEET PIANO × CINNAMOROLL
@@ -255,112 +264,116 @@
 
             <!-- ================= 1. 彼安諾 (My Sweet Piano) ================= -->
             <g id="char-piano-group" class="cursor-pointer">
-              <g class="anim-piano-body">
-                <!-- 小尾巴 (左側蓬鬆羊毛球) -->
-                <circle cx="67" cy="121" r="7.5" fill="#FFC4DA" stroke="#8C6255" stroke-width="2.1"/>
+              <g id="char-piano-jump">
+                <g class="anim-piano-body">
+                  <!-- 小尾巴 (左側蓬鬆羊毛球) -->
+                  <circle cx="67" cy="121" r="7.5" fill="#FFC4DA" stroke="#8C6255" stroke-width="2.1"/>
 
-                <!-- 圓滾滾羊毛小身體與小短腿 (參考左下官方圖撒嬌站姿) -->
-                <path d="M77 104 C71 109, 70 123, 75 130 L76 138 C76 141, 83 141, 84 138 L85 133 C90 134, 96 134, 100 133 L101 138 C102 141, 109 141, 109 138 L110 130 C115 123, 114 109, 108 104 Z" fill="#FFC4DA" stroke="#8C6255" stroke-width="2.1" stroke-linejoin="round"/>
-                <!-- 小蹄子 -->
-                <ellipse cx="80" cy="139" rx="4.2" ry="2.5" fill="#FFF7EB" stroke="#8C6255" stroke-width="1.6"/>
-                <ellipse cx="105" cy="139" rx="4.2" ry="2.5" fill="#FFF7EB" stroke="#8C6255" stroke-width="1.6"/>
+                  <!-- 圓滾滾羊毛小身體與小短腿 (參考左下官方圖撒嬌站姿) -->
+                  <path d="M77 104 C71 109, 70 123, 75 130 L76 138 C76 141, 83 141, 84 138 L85 133 C90 134, 96 134, 100 133 L101 138 C102 141, 109 141, 109 138 L110 130 C115 123, 114 109, 108 104 Z" fill="#FFC4DA" stroke="#8C6255" stroke-width="2.1" stroke-linejoin="round"/>
+                  <!-- 小蹄子 -->
+                  <ellipse cx="80" cy="139" rx="4.2" ry="2.5" fill="#FFF7EB" stroke="#8C6255" stroke-width="1.6"/>
+                  <ellipse cx="105" cy="139" rx="4.2" ry="2.5" fill="#FFF7EB" stroke="#8C6255" stroke-width="1.6"/>
 
-                <!-- 下垂蓬鬆小羊耳 -->
-                <path d="M62 78 C51 82, 49 95, 57 98 C63 100, 68 93, 68 86" fill="#FFB3D0" stroke="#8C6255" stroke-width="2.1" stroke-linecap="round"/>
-                <path d="M128 78 C139 82, 141 95, 133 98 C127 100, 122 93, 122 86" fill="#FFB3D0" stroke="#8C6255" stroke-width="2.1" stroke-linecap="round"/>
+                  <!-- 下垂蓬鬆小羊耳 -->
+                  <path d="M62 78 C51 82, 49 95, 57 98 C63 100, 68 93, 68 86" fill="#FFB3D0" stroke="#8C6255" stroke-width="2.1" stroke-linecap="round"/>
+                  <path d="M128 78 C139 82, 141 95, 133 98 C127 100, 122 93, 122 86" fill="#FFB3D0" stroke="#8C6255" stroke-width="2.1" stroke-linecap="round"/>
 
-                <!-- 蓬鬆棉花糖捲毛爆炸頭外輪廓 -->
-                <path d="M66 86
-                         C56 82, 56 68, 65 63
-                         C62 52, 72 43, 82 47
-                         C87 38, 103 38, 108 47
-                         C118 43, 128 52, 125 63
-                         C134 68, 134 82, 124 86
-                         C126 96, 115 104, 95 104
-                         C75 104, 64 96, 66 86 Z"
-                      fill="#FFC4DA" stroke="#8C6255" stroke-width="2.2" stroke-linejoin="round"/>
+                  <!-- 蓬鬆棉花糖捲毛爆炸頭外輪廓 -->
+                  <path d="M66 86
+                           C56 82, 56 68, 65 63
+                           C62 52, 72 43, 82 47
+                           C87 38, 103 38, 108 47
+                           C118 43, 128 52, 125 63
+                           C134 68, 134 82, 124 86
+                           C126 96, 115 104, 95 104
+                           C75 104, 64 96, 66 86 Z"
+                        fill="#FFC4DA" stroke="#8C6255" stroke-width="2.2" stroke-linejoin="round"/>
 
-                <!-- 奶油白小臉龐 -->
-                <path d="M72 82 C72 68, 83 63, 95 63 C107 63, 118 68, 118 82 C118 95, 108 101, 95 101 C82 101, 72 95, 72 82 Z" fill="#FFF9F5" stroke="#8C6255" stroke-width="1.9"/>
+                  <!-- 奶油白小臉龐 -->
+                  <path d="M72 82 C72 68, 83 63, 95 63 C107 63, 118 68, 118 82 C118 95, 108 101, 95 101 C82 101, 72 95, 72 82 Z" fill="#FFF9F5" stroke="#8C6255" stroke-width="1.9"/>
 
-                <!-- 額頭蓬鬆捲毛劉海 -->
-                <path d="M73 76 C77 69, 85 71, 88 75 C92 69, 99 69, 102 75 C106 71, 113 69, 117 76" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                  <!-- 額頭蓬鬆捲毛劉海 -->
+                  <path d="M73 76 C77 69, 85 71, 88 75 C92 69, 99 69, 102 75 C106 71, 113 69, 117 76" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
 
-                <!-- 頭頂三麗鷗小花朵頭飾 (參考右上方花圈彼安諾) -->
-                <g transform="translate(80, 48)">
-                  <circle cx="0" cy="0" r="4.5" fill="#FFF59D" stroke="#8C6255" stroke-width="1.3"/>
-                  <circle cx="0" cy="0" r="1.8" fill="#F472B6"/>
+                  <!-- 頭頂三麗鷗小花朵頭飾 -->
+                  <g transform="translate(80, 48)">
+                    <circle cx="0" cy="0" r="4.5" fill="#FFF59D" stroke="#8C6255" stroke-width="1.3"/>
+                    <circle cx="0" cy="0" r="1.8" fill="#F472B6"/>
+                  </g>
+                  <g transform="translate(95, 44)">
+                    <circle cx="0" cy="0" r="5" fill="#FFFFFF" stroke="#8C6255" stroke-width="1.3"/>
+                    <circle cx="0" cy="0" r="2" fill="#FBBF24"/>
+                  </g>
+                  <g transform="translate(110, 48)">
+                    <circle cx="0" cy="0" r="4.5" fill="#BAE6FD" stroke="#8C6255" stroke-width="1.3"/>
+                    <circle cx="0" cy="0" r="1.8" fill="#FFFFFF"/>
+                  </g>
+
+                  <!-- 眼睛 (會眨眼) -->
+                  <g class="anim-blink-piano">
+                    <ellipse cx="83" cy="85" rx="3.1" ry="4" fill="#5C3D34"/>
+                    <circle cx="82" cy="83.6" r="1.2" fill="#FFFFFF"/>
+                    <ellipse cx="107" cy="85" rx="3.1" ry="4" fill="#5C3D34"/>
+                    <circle cx="106" cy="83.6" r="1.2" fill="#FFFFFF"/>
+                  </g>
+
+                  <!-- 粉嫩腮紅與小巧鼻子嘴巴 -->
+                  <ellipse cx="77" cy="91" rx="4.5" ry="2.6" fill="#FF9EBB" opacity="0.72"/>
+                  <ellipse cx="113" cy="91" rx="4.5" ry="2.6" fill="#FF9EBB" opacity="0.72"/>
+                  <ellipse cx="95" cy="89.5" rx="2.3" ry="1.6" fill="#FBBF24" stroke="#8C6255" stroke-width="1.2"/>
+                  <path d="M91.5 93.5 Q95 96.5 98.5 93.5" fill="none" stroke="#8C6255" stroke-width="1.7" stroke-linecap="round"/>
+
+                  <!-- 經典撒嬌小手手 -->
+                  <path d="M84 108 C83 101, 88 97, 92 100 C95 103, 93 110, 88 112 Z" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linejoin="round"/>
+                  <path d="M106 108 C113 111, 114 118, 108 120 C104 121, 102 116, 103 112" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linecap="round"/>
                 </g>
-                <g transform="translate(95, 44)">
-                  <circle cx="0" cy="0" r="5" fill="#FFFFFF" stroke="#8C6255" stroke-width="1.3"/>
-                  <circle cx="0" cy="0" r="2" fill="#FBBF24"/>
-                </g>
-                <g transform="translate(110, 48)">
-                  <circle cx="0" cy="0" r="4.5" fill="#BAE6FD" stroke="#8C6255" stroke-width="1.3"/>
-                  <circle cx="0" cy="0" r="1.8" fill="#FFFFFF"/>
-                </g>
-
-                <!-- 眼睛 (會眨眼) -->
-                <g class="anim-blink-piano">
-                  <ellipse cx="83" cy="85" rx="3.1" ry="4" fill="#5C3D34"/>
-                  <circle cx="82" cy="83.6" r="1.2" fill="#FFFFFF"/>
-                  <ellipse cx="107" cy="85" rx="3.1" ry="4" fill="#5C3D34"/>
-                  <circle cx="106" cy="83.6" r="1.2" fill="#FFFFFF"/>
-                </g>
-
-                <!-- 粉嫩腮紅與小巧鼻子嘴巴 -->
-                <ellipse cx="77" cy="91" rx="4.5" ry="2.6" fill="#FF9EBB" opacity="0.72"/>
-                <ellipse cx="113" cy="91" rx="4.5" ry="2.6" fill="#FF9EBB" opacity="0.72"/>
-                <ellipse cx="95" cy="89.5" rx="2.3" ry="1.6" fill="#FBBF24" stroke="#8C6255" stroke-width="1.2"/>
-                <path d="M91.5 93.5 Q95 96.5 98.5 93.5" fill="none" stroke="#8C6255" stroke-width="1.7" stroke-linecap="round"/>
-
-                <!-- 經典撒嬌小手手 (一手輕托嘴邊、一手輕放身旁) -->
-                <path d="M84 108 C83 101, 88 97, 92 100 C95 103, 93 110, 88 112 Z" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linejoin="round"/>
-                <path d="M106 108 C113 111, 114 118, 108 120 C104 121, 102 116, 103 112" fill="#FFC4DA" stroke="#8C6255" stroke-width="1.9" stroke-linecap="round"/>
               </g>
             </g>
 
             <!-- ================= 2. 大耳狗喜拿 (Cinnamoroll) ================= -->
             <g id="char-cinna-group" class="cursor-pointer">
-              <g class="anim-cinna-body">
-                <!-- 左側招牌捲捲肉桂尾巴 (參考左下巴哈姆特官方圖) -->
-                <g class="anim-cinna-tail">
-                  <path d="M225 114 C211 111, 206 124, 214 131 C220 136, 229 132, 228 124" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round"/>
-                  <path d="M222 119 C216 118, 214 124, 218 127 C221 129, 224 126, 223 123" fill="none" stroke="#9A7B68" stroke-width="1.8" stroke-linecap="round"/>
+              <g id="char-cinna-jump">
+                <g class="anim-cinna-body">
+                  <!-- 左側招牌捲捲肉桂尾巴 -->
+                  <g class="anim-cinna-tail">
+                    <path d="M225 114 C211 111, 206 124, 214 131 C220 136, 229 132, 228 124" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round"/>
+                    <path d="M222 119 C216 118, 214 124, 218 127 C221 129, 224 126, 223 123" fill="none" stroke="#9A7B68" stroke-width="1.8" stroke-linecap="round"/>
+                  </g>
+
+                  <!-- 雪白小身體與圓圓小短腳 -->
+                  <path d="M229 102 C224 109, 224 123, 229 130 L230 137 C230 140.5, 238 140.5, 239 137 L240 132 C244 133, 250 133, 254 132 L255 137 C256 140.5, 264 140.5, 264 137 L265 130 C270 123, 270 109, 265 102 Z" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linejoin="round"/>
+
+                  <!-- 左長耳朵 (水平展開再微垂，會上下拍動) -->
+                  <g class="anim-cinna-ear-l">
+                    <path d="M220 74 C202 68, 178 73, 175 84 C173 93, 188 97, 204 91 C212 88, 218 84, 221 82" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+
+                  <!-- 右長耳朵 (水平展開再微垂，會上下拍動) -->
+                  <g class="anim-cinna-ear-r">
+                    <path d="M274 74 C292 68, 316 73, 319 84 C321 93, 306 97, 290 91 C282 88, 276 84, 273 82" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </g>
+
+                  <!-- 寬扁蓬鬆雲朵大頭 -->
+                  <path d="M216 83 C216 66, 230 58, 247 58 C264 58, 278 66, 278 83 C278 97, 265 104, 247 104 C229 104, 216 97, 216 83 Z" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2"/>
+
+                  <!-- 水藍色橢圓大眼睛 (低眼位＋會眨眼) -->
+                  <g class="anim-blink-cinna">
+                    <ellipse cx="231" cy="86" rx="3.4" ry="4.6" fill="#4FA8E8"/>
+                    <circle cx="230" cy="84.2" r="1.2" fill="#FFFFFF"/>
+                    <ellipse cx="263" cy="86" rx="3.4" ry="4.6" fill="#4FA8E8"/>
+                    <circle cx="262" cy="84.2" r="1.2" fill="#FFFFFF"/>
+                  </g>
+
+                  <!-- 粉嫩橢圓腮紅與經典 ω 微笑小嘴 -->
+                  <ellipse cx="224" cy="93" rx="5.2" ry="2.8" fill="#FFB3CC" opacity="0.8"/>
+                  <ellipse cx="270" cy="93" rx="5.2" ry="2.8" fill="#FFB3CC" opacity="0.8"/>
+                  <path d="M241 89.5 Q244 93.5 247 89.8 Q250 93.5 253 89.5" fill="none" stroke="#9A7B68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+                  <!-- 雙手捧在胸前的經典可愛手勢 -->
+                  <path d="M233 107 C235 101, 242 101, 244 107 C245 111, 240 114, 235 113" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M261 107 C259 101, 252 101, 250 107 C249 111, 254 114, 259 113" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2" stroke-linecap="round"/>
                 </g>
-
-                <!-- 雪白小身體與圓圓小短腳 -->
-                <path d="M229 102 C224 109, 224 123, 229 130 L230 137 C230 140.5, 238 140.5, 239 137 L240 132 C244 133, 250 133, 254 132 L255 137 C256 140.5, 264 140.5, 264 137 L265 130 C270 123, 270 109, 265 102 Z" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linejoin="round"/>
-
-                <!-- 左長耳朵 (水平展開再微垂，會上下拍動) -->
-                <g class="anim-cinna-ear-l">
-                  <path d="M220 74 C202 68, 178 73, 175 84 C173 93, 188 97, 204 91 C212 88, 218 84, 221 82" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </g>
-
-                <!-- 右長耳朵 (水平展開再微垂，會上下拍動) -->
-                <g class="anim-cinna-ear-r">
-                  <path d="M274 74 C292 68, 316 73, 319 84 C321 93, 306 97, 290 91 C282 88, 276 84, 273 82" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                </g>
-
-                <!-- 寬扁蓬鬆雲朵大頭 -->
-                <path d="M216 83 C216 66, 230 58, 247 58 C264 58, 278 66, 278 83 C278 97, 265 104, 247 104 C229 104, 216 97, 216 83 Z" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2.2"/>
-
-                <!-- 水藍色橢圓大眼睛 (低眼位＋會眨眼) -->
-                <g class="anim-blink-cinna">
-                  <ellipse cx="231" cy="86" rx="3.4" ry="4.6" fill="#4FA8E8"/>
-                  <circle cx="230" cy="84.2" r="1.2" fill="#FFFFFF"/>
-                  <ellipse cx="263" cy="86" rx="3.4" ry="4.6" fill="#4FA8E8"/>
-                  <circle cx="262" cy="84.2" r="1.2" fill="#FFFFFF"/>
-                </g>
-
-                <!-- 粉嫩橢圓腮紅與經典 ω 微笑小嘴 -->
-                <ellipse cx="224" cy="93" rx="5.2" ry="2.8" fill="#FFB3CC" opacity="0.8"/>
-                <ellipse cx="270" cy="93" rx="5.2" ry="2.8" fill="#FFB3CC" opacity="0.8"/>
-                <path d="M241 89.5 Q244 93.5 247 89.8 Q250 93.5 253 89.5" fill="none" stroke="#9A7B68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-
-                <!-- 雙手捧在胸前的經典可愛手勢 -->
-                <path d="M233 107 C235 101, 242 101, 244 107 C245 111, 240 114, 235 113" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2" stroke-linecap="round"/>
-                <path d="M261 107 C259 101, 252 101, 250 107 C249 111, 254 114, 259 113" fill="#FFFFFF" stroke="#9A7B68" stroke-width="2" stroke-linecap="round"/>
               </g>
             </g>
           </svg>
@@ -686,18 +699,23 @@
         return `sanrio_piano_cinna_reward_sync_${clean}`;
       }
 
+      // 每次點擊／蓋章皆可完整重啟彈跳動畫（獨立外層避免干擾呼吸動畫）
       function triggerCharacterCheer(who = 'both') {
-        const pianoGroup = document.getElementById('char-piano-group');
-        const cinnaGroup = document.getElementById('char-cinna-group');
-        if ((who === 'piano' || who === 'both') && pianoGroup) {
-          pianoGroup.classList.remove('char-cheer');
-          void pianoGroup.offsetWidth;
-          pianoGroup.classList.add('char-cheer');
+        const pianoJump = document.getElementById('char-piano-jump');
+        const cinnaJump = document.getElementById('char-cinna-jump');
+        const replayJump = (el) => {
+          if (!el) return;
+          el.classList.remove('char-cheer');
+          el.style.animation = 'none';
+          void el.getBoundingClientRect();
+          el.style.animation = '';
+          el.classList.add('char-cheer');
+        };
+        if (who === 'piano' || who === 'both') {
+          replayJump(pianoJump);
         }
-        if ((who === 'cinna' || who === 'both') && cinnaGroup) {
-          cinnaGroup.classList.remove('char-cheer');
-          void cinnaGroup.offsetWidth;
-          cinnaGroup.classList.add('char-cheer');
+        if (who === 'cinna' || who === 'both') {
+          replayJump(cinnaJump);
         }
       }
 
