@@ -517,7 +517,7 @@
     </div>
   </div>
 
-  <!-- 雙模即時雲端同步（Firebase 自動偵測 + 外部靜態部署跨機雲端資料庫 + 本機備援） -->
+  <!-- 雙模即時雲端同步（Firebase 自動偵測 + 外部靜態部署跨機雲端通道 + 本機備援） -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -525,8 +525,8 @@
 
     (async function () {
       const TOTAL_POINTS = 30;
-      const STORAGE_PREFIX = 'piano_cinna_card_v8_';
-      const CLOUD_SYNC_BASE = 'https://jsonblob.com/api/jsonBlob';
+      const STORAGE_PREFIX = 'piano_cinna_card_v9_';
+      const NTFY_BASE = 'https://ntfy.sh';
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
       let firebaseConfig = null;
@@ -552,11 +552,11 @@
 
       let state = { ...defaultState };
       let currentRoomCode = '';
-      let currentBlobId = '';
-      let syncMode = 'rest';
+      let syncMode = 'ntfy';
       let db = null;
       let currentUser = null;
       let unsubscribeSnapshot = null;
+      let eventSource = null;
       let pollTimer = null;
       let replayTimers = [];
       let isReplaying = false;
@@ -677,11 +677,13 @@
 
       function saveLocalBackup(code, data) {
         try {
-          localStorage.setItem(STORAGE_PREFIX + code, JSON.stringify({
-            ...data,
-            _blobId: currentBlobId || ''
-          }));
+          localStorage.setItem(STORAGE_PREFIX + code, JSON.stringify(data));
         } catch (e) {}
+      }
+
+      function getCloudTopic(roomCode) {
+        const clean = roomCode.replace(/[^A-Z0-9]/gi, '').toLowerCase();
+        return `sanrio_piano_cinna_reward_sync_${clean}`;
       }
 
       function triggerCharacterCheer(who = 'both') {
@@ -1014,47 +1016,26 @@
             await setDoc(roomRef, state);
             return;
           } catch (e) {
-            console.warn('Firestore 寫入切換至雲端 KV 同步:', e);
-            syncMode = 'rest';
+            console.warn('Firestore 寫入切換至即時雲端通道:', e);
+            syncMode = 'ntfy';
           }
         }
 
         try {
           setSyncStatus('syncing', '☁️ 正在同步最新點數...');
-          if (currentBlobId) {
-            const res = await fetch(`${CLOUD_SYNC_BASE}/${currentBlobId}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify(state)
-            });
-            if (res.ok) {
-              setSyncStatus('connected', '● 雙人雲端已同步・跨手機即時更新');
-              return;
-            }
-          }
-
-          const createRes = await fetch(CLOUD_SYNC_BASE, {
+          const topic = getCloudTopic(currentRoomCode);
+          const res = await fetch(`${NTFY_BASE}/${topic}`, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+              'Title': 'PianoRewardSync',
+              'Cache': 'yes'
             },
             body: JSON.stringify(state)
           });
-          if (createRes.ok) {
-            const locationHeader = createRes.headers.get('Location') || createRes.headers.get('x-jsonblob');
-            if (locationHeader) {
-              const parts = locationHeader.split('/');
-              currentBlobId = parts[parts.length - 1];
-              saveLocalBackup(currentRoomCode, state);
-              updateShareUrlInAddressBar();
-            }
-            setSyncStatus('connected', '● 雙人雲端已建立・可分享連結');
+          if (res.ok) {
+            setSyncStatus('connected', '● 雙人雲端已連線・跨手機即時同步');
           } else {
-            throw new Error(`HTTP ${createRes.status}`);
+            throw new Error(`HTTP ${res.status}`);
           }
         } catch (e) {
           setSyncStatus('local', '⚠️ 雲端暫時無法連線（已存於本機）');
@@ -1065,22 +1046,30 @@
         try {
           const url = new URL(window.location.href);
           url.searchParams.set('card', currentRoomCode);
-          if (currentBlobId) {
-            url.searchParams.set('sync', currentBlobId);
-          }
+          url.searchParams.delete('sync');
           window.history.replaceState({}, '', url.toString());
         } catch (e) {}
       }
 
       function applyRemoteState(incomingData) {
-        if (!incomingData || typeof incomingData !== 'object') return;
+        if (!incomingData) return;
         const incomingTime = Number(incomingData.updatedAt || 0);
-        const currentTime = Number(state.updatedAt || 0);
+        const isFirstLoad = !hasPlayedInitialReplay;
 
-        if (!hasPlayedInitialReplay) {
+        if (!isFirstLoad && incomingTime <= Number(state.updatedAt || 0)) {
+          return;
+        }
+
+        const prevPoints = state.points;
+        state = {
+          ...defaultState,
+          ...state,
+          ...incomingData
+        };
+        saveLocalBackup(currentRoomCode, state);
+
+        if (isFirstLoad) {
           hasPlayedInitialReplay = true;
-          state = { ...defaultState, ...incomingData };
-          saveLocalBackup(currentRoomCode, state);
           if (state.points > 0) {
             playSequentialStampReplay(state.points);
           } else {
@@ -1090,76 +1079,118 @@
           return;
         }
 
-        if (incomingTime > currentTime && incomingData.updatedBy !== deviceId) {
-          const prevPoints = state.points;
-          state = { ...defaultState, ...incomingData };
-          saveLocalBackup(currentRoomCode, state);
-          cancelSequentialReplay();
+        if (!isReplaying) {
           renderGrid(state.points);
           updateProgressUI(state.points);
-
           if (state.points > prevPoints) {
-            const idx = state.points - 1;
             const isMilestone = state.points === 10 || state.points === 20 || state.points === 30;
-            playStampCelebration(idx, isMilestone);
+            playStampCelebration(state.points - 1, isMilestone);
             triggerCharacterCheer('both');
-            showToast(`💖 對方剛剛幫你蓋了第 ${state.points} 點！`, 'pink');
-          } else {
-            showToast('☁️ 集點卡進度已與對方同步！', 'blue');
+          }
+          if (incomingData.updatedBy && incomingData.updatedBy !== deviceId) {
+            showToast('💞 雲端點數已即時同步更新！', 'pink');
           }
         }
       }
 
-      function startRestSyncLoop(roomCode, syncIdFromUrl = '') {
-        if (pollTimer) clearInterval(pollTimer);
-        const localSaved = loadLocalBackup(roomCode);
-        currentBlobId = syncIdFromUrl || (localSaved && localSaved._blobId) || '';
+      function parseNtfyLines(rawText) {
+        if (!rawText) return null;
+        const lines = rawText.trim().split('\n');
+        let latestPayload = null;
+        for (let i = lines.length - 1; i >= 0; i--) {
+          try {
+            const envelope = JSON.parse(lines[i]);
+            if (envelope && envelope.event === 'message' && envelope.message) {
+              const parsedState = JSON.parse(envelope.message);
+              if (parsedState && typeof parsedState.points === 'number') {
+                if (!latestPayload || Number(parsedState.updatedAt || 0) > Number(latestPayload.updatedAt || 0)) {
+                  latestPayload = parsedState;
+                }
+              }
+            }
+          } catch (e) {}
+        }
+        return latestPayload;
+      }
 
-        const fetchRemote = async (isInitial = false) => {
-          if (!currentBlobId) {
-            if (isInitial) {
+      function startCloudTopicSync(roomCode) {
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
+        }
+        if (pollTimer) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+        }
+
+        const topic = getCloudTopic(roomCode);
+        setSyncStatus('syncing', '☁️ 正在連線雙人雲端...');
+
+        const fetchHistory = async (isInitial = false) => {
+          try {
+            const res = await fetch(`${NTFY_BASE}/${topic}/json?poll=1&since=all&_t=${Date.now()}`, {
+              cache: 'no-store'
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const text = await res.text();
+            const remoteData = parseNtfyLines(text);
+
+            if (remoteData) {
+              applyRemoteState(remoteData);
+            } else if (isInitial) {
               if (!hasPlayedInitialReplay) {
                 hasPlayedInitialReplay = true;
                 if (state.points > 0) playSequentialStampReplay(state.points);
               }
-              await saveToCloud({});
-            }
-            return;
-          }
-
-          try {
-            const res = await fetch(`${CLOUD_SYNC_BASE}/${currentBlobId}?_t=${Date.now()}`, {
-              method: 'GET',
-              headers: { 'Accept': 'application/json' },
-              cache: 'no-store'
-            });
-            if (res.ok) {
-              const remoteData = await res.json();
-              if (remoteData && typeof remoteData === 'object') {
-                applyRemoteState(remoteData);
+              if (state.points > 0 || state.title !== defaultState.title || state.pin) {
+                await saveToCloud({});
               }
-              setSyncStatus('connected', '● 雙人雲端已連線・跨手機即時更新');
-            } else {
-              throw new Error(`HTTP ${res.status}`);
             }
+            setSyncStatus('connected', '● 雙人雲端已連線・跨手機即時同步');
           } catch (e) {
             if (isInitial && !hasPlayedInitialReplay) {
               hasPlayedInitialReplay = true;
               if (state.points > 0) playSequentialStampReplay(state.points);
             }
-            setSyncStatus('local', '⚠️ 雲端連線異常（請檢查網路）');
+            setSyncStatus('local', '⚠️ 雲端暫時無法連線（已存於本機）');
           }
         };
 
-        fetchRemote(true);
-        pollTimer = setInterval(() => fetchRemote(false), 2500);
+        fetchHistory(true);
+
+        // 開啟即時推播監聽（對方一蓋章，1 秒內立刻收到更新）
+        try {
+          eventSource = new EventSource(`${NTFY_BASE}/${topic}/sse`);
+          eventSource.onopen = () => {
+            setSyncStatus('connected', '● 雙人雲端已連線・跨手機即時同步');
+          };
+          eventSource.onmessage = (evt) => {
+            try {
+              const envelope = JSON.parse(evt.data);
+              if (envelope && envelope.event === 'message' && envelope.message) {
+                const remoteData = JSON.parse(envelope.message);
+                applyRemoteState(remoteData);
+              }
+            } catch (err) {}
+          };
+          eventSource.onerror = () => {
+            // 若瀏覽器暫停背景 SSE，由下方定時輪詢自動接手
+          };
+        } catch (e) {}
+
+        // 雙保險定時同步（每 4 秒檢查一次最新雲端狀態）
+        pollTimer = setInterval(() => fetchHistory(false), 4000);
       }
 
-      async function connectToRoom(roomCode, syncIdFromUrl = '') {
+      async function connectToRoom(roomCode) {
         cancelSequentialReplay();
         if (unsubscribeSnapshot) {
           unsubscribeSnapshot();
           unsubscribeSnapshot = null;
+        }
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
         }
         if (pollTimer) {
           clearInterval(pollTimer);
@@ -1194,18 +1225,18 @@
                 setSyncStatus('connected', '● 雙人雲端已連線・即時同步中');
               }
             }, (err) => {
-              console.warn('Firestore 監聽切換為 REST 同步:', err);
-              syncMode = 'rest';
-              startRestSyncLoop(currentRoomCode, syncIdFromUrl);
+              console.warn('Firestore 監聽切換為即時雲端通道:', err);
+              syncMode = 'ntfy';
+              startCloudTopicSync(currentRoomCode);
             });
             updateShareUrlInAddressBar();
             return;
           } catch (e) {
-            syncMode = 'rest';
+            syncMode = 'ntfy';
           }
         }
 
-        startRestSyncLoop(currentRoomCode, syncIdFromUrl);
+        startCloudTopicSync(currentRoomCode);
         updateShareUrlInAddressBar();
       }
 
@@ -1405,9 +1436,7 @@
         copyShareLinkBtn.addEventListener('click', () => {
           const shareUrl = new URL(window.location.href);
           shareUrl.searchParams.set('card', currentRoomCode);
-          if (currentBlobId) {
-            shareUrl.searchParams.set('sync', currentBlobId);
-          }
+          shareUrl.searchParams.delete('sync');
           copyTextSafely(shareUrl.toString(), '🔗 已複製專屬同步連結！直接貼到 LINE 傳給對方吧');
         });
       }
@@ -1420,7 +1449,7 @@
             return;
           }
           syncModal.classList.add('hidden');
-          connectToRoom(code, '');
+          connectToRoom(code);
           showToast(`✨ 已切換至集點卡 ${code}`, 'pink');
         });
       }
@@ -1429,7 +1458,7 @@
         newRoomBtn.addEventListener('click', () => {
           const freshCode = generateRoomCode();
           syncModal.classList.add('hidden');
-          connectToRoom(freshCode, '');
+          connectToRoom(freshCode);
           showToast(`🎀 已建立全新集點卡 ${freshCode}`, 'pink');
         });
       }
@@ -1447,14 +1476,13 @@
           currentUser = auth.currentUser;
           syncMode = 'firebase';
         } catch (e) {
-          console.warn('Firebase 驗證改用跨機雲端同步:', e);
-          syncMode = 'rest';
+          console.warn('Firebase 驗證改用即時雲端通道:', e);
+          syncMode = 'ntfy';
         }
       }
 
       const urlParams = new URLSearchParams(window.location.search);
       const urlCard = urlParams.get('card');
-      const urlSync = urlParams.get('sync') || '';
       let initialCode = urlCard;
       if (!initialCode) {
         try {
@@ -1465,7 +1493,7 @@
         initialCode = generateRoomCode();
       }
 
-      await connectToRoom(initialCode, urlSync);
+      await connectToRoom(initialCode);
     })();
   </script>
 </body>
